@@ -1,0 +1,75 @@
+# gdal version issues will be end of me!
+# Install system dependencies
+# Switched to using the alpine regular image as it comes with the correct packages
+# including support for spatialite and gdal and all its dependencies
+# Tried other ways, but they failed, so gave up on the small base image.
+# Building spatialite and gdal from source is a pain.
+# Dependency nightmares with geo related packages.
+# For now, let use the dev packages for the runtime build.
+# Change to ubuntu image, python 3.12 slim doesnt work
+# ... thanks to gdal mismatch (3.10.3 and 3.11.4) hell!
+# Tried making a custom image with the correct packages, but it failed.
+# TODO: Figure out if this is really worth it and if yes, how to make it work ...
+# with smaller base images.
+
+# --- Stage 1: Build uv binary ---
+# Use the official uv image from GitHub Container Registry
+FROM ghcr.io/astral-sh/uv:latest AS uv-installer
+
+# --- Stage 2: Final image ---
+# Use the correct base image for your application, including Spatialite support
+FROM ghcr.io/osgeo/gdal:alpine-normal-3.11.4
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PYTHONFAULTHANDLER=1
+
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    python3-dev \
+    curl
+
+# Copy the uv binary from the installer stage into the final image
+COPY --from=uv-installer /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+ARG APP_USER=myuser
+ARG APP_GROUP=mygroup
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+# Create a non-root user
+RUN addgroup -g $APP_GID $APP_GROUP && \
+    adduser -S -u $APP_UID -G $APP_GROUP $APP_USER
+
+# Copy dependencies related files
+COPY pyproject.toml uv.lock ./
+
+# Create a virtual environment and install dependencies
+RUN uv venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    uv sync --frozen
+
+# Copy project files
+COPY . . --chown=$APP_USER:$APP_GROUP
+# Install the project in non-editable mode without dev dependencies
+RUN . /opt/venv/bin/activate && \
+    uv install --no-dev .
+
+# Switch to non-root user
+USER $APP_USER
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Entrypoint
+COPY --chown=$APP_GROUP:$APP_USER entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]
