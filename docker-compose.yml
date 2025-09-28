@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: geodjango-app
+    restart: unless-stopped
+    environment:
+      - DJANGO_SETTINGS_MODULE=biznezz.settings
+      - DEBUG=${DEBUG:-True}
+      - SPATIALITE_LIBRARY_PATH=/usr/lib/mod_spatialite.so.8.1.0
+      - GDAL_LIBRARY_PATH=/usr/lib/libgdal.so.37.3.11.4
+      - GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so.1.19.0
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - ./db:/app/db
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  static_volume:

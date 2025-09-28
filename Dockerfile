@@ -11,7 +11,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     PYTHONFAULTHANDLER=1 \
-    SPATIALITE_LIBRARY_PATH=/usr/lib/mod_spatialite.so.8.1.0
+    SPATIALITE_LIBRARY_PATH=/usr/lib/mod_spatialite.so.8.1.0 \
+    GDAL_LIBRARY_PATH=/usr/lib/libgdal.so.37.3.11.4 \
+    GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so.1.19.0
 
 # Debug output for spatialite library path
 #RUN echo "*****" && \
@@ -46,6 +48,9 @@ COPY --chown=$APP_USER:$APP_GROUP entrypoint.sh ./
 COPY --chown=$APP_USER:$APP_GROUP . .
 RUN mkdir -p /app/db && \
     chown -R $APP_USER:$APP_GROUP /app/db
+
+# Delete the .env file to prevent it from being loaded at runtime as it contains local dev setup paths
+RUN rm -f .env
 
 # Run collectstatic to gather all static assets.
 # Run this as the root user since it's a build step.

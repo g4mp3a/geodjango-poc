@@ -27,16 +27,19 @@ A proof-of-concept application demonstrating geospatial functionality with Djang
 2. Choose your setup method:
 
 ### Option 1: Docker (Recommended)
+#### Using docker
+```commandline
+docker build -t geodjango-app .
+docker run -p 8000:8000 geodjango-app
+```
+#### Using docker-compose
 ```bash
-# Create .env file
-cp .env.example .env
-
 # Build and start the application
 docker-compose up --build
 ```
 
 ### Option 2: Local Development Setup
-I prefer to use uv for local development.
+`uv` for local development.
 ```bash
 # Install dependencies using Homebrew
 brew install django spatialite-tools gdal
@@ -53,7 +56,7 @@ uv run manage.py load_businesses [--clear]
 # Start the development server
 uv run manage.py runserver
 ```
-Alternatively, you can use pip as well.
+Alternatively, can use pip as well.
 ```bash
 # Install dependencies using Homebrew
 brew install django spatialite-tools gdal
@@ -67,7 +70,7 @@ pip install -r requirements.txt
 Note: You can also re-generate the requirements.txt file using either 
 - `uv pip compile pyproject.toml [uv.lock] -o requirements.txt`
 - `uv export --format requirements-txt > requirements.txt `
-- your preferred method that you like
+- Any other preferred method that you like
 
 # Run migrations
 python manage.py migrate
@@ -80,8 +83,12 @@ python manage.py runserver
 ```
 
 3. Access the application at http://localhost:8000
-![img.png](img.png)
+![img_ui_1.png](img_ui.png)
+![img_ui_2.png](img_ui_2.png)
 Reset to search for businesses again.
+
+4. Console output:
+![img_console.png](img_ui_1.png)
 
 ## Project Structure
 
