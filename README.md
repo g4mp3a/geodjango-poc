@@ -83,12 +83,12 @@ python manage.py runserver
 ```
 
 3. Access the application at http://localhost:8000
-![img_ui_1.png](img_ui.png)
-![img_ui_2.png](img_ui_2.png)
+   ![img_1](./img_1.png)
+   ![img_2](./img_2.png)
 Reset to search for businesses again.
 
 4. Console output:
-![img_console.png](img_ui_1.png)
+   ![img_3](./img_3.png)
 
 ## Project Structure
 
