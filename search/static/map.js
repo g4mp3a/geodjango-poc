@@ -63,11 +63,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Fit map to content
+            if (radiusCircle && markersLayer) {
+                map.setView([39.8283, -98.5795], 5);
+            } else
+            if (radiusCircle) {
+                map.fitBounds(radiusCircle.getBounds().pad(0.1));
+            } else
             if (markersLayer) {
                 map.fitBounds(markersLayer.getBounds().pad(0.1));
-                map.setZoom(map.getZoom() - 3.5);
-            } else if (radiusCircle) {
-                map.fitBounds(radiusCircle.getBounds().pad(0.1));
             } else {
                 map.setView([39.8283, -98.5795], 4);
             }

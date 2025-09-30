@@ -215,7 +215,7 @@ class BusinessSearcher:
             QuerySet[Business]: QuerySet of Business objects in the specified city and state
         """
         if not state:
-            print("Please specify a state")
+            # print("Please specify a state")
             return []
 
         queryset = Business.objects.all()
