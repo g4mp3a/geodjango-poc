@@ -137,28 +137,8 @@
       </aside>
       <div id="map"></div>
     </div>
-    {{ markers|json_script:"markers" }}
-    {% if search_center %}
-    <script>
-        window.SEARCH_CENTER = {
-            lat: {{ search_center.lat|safe }},
-            lng: {{ search_center.lng|safe }}
-        };
-        window.SEARCH_RADIUS_KM = {{ search_radius_km|default:0 }};
-    </script>
-    {% endif %}
-    <script>
-      // Reset button functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        const resetButton = document.getElementById('reset-search');
-        if (resetButton) {
-          resetButton.addEventListener('click', function() {
-            window.location.href = '/';
-          });
-        }
-      });
-    </script>
     <script defer src="{% static 'map.js' %}"></script>
     <script defer src="{% static 'search.js' %}"></script>
+    <script defer src="{% static 'results.js' %}"></script>
   </body>
 </html>

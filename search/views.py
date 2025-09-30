@@ -15,36 +15,6 @@ from search.models import Business
 from search.serializers import BusinessSerializer
 from search.search_helper import BusinessSearcher, find_businesses_incrementally, get_businesses_by_city_state
 
-
-class SearchResultsMapView(TemplateView):
-    permission_classes = [AllowAny]
-    serializer_class = BusinessSerializer
-
-    template_name = "map.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        
-        # Initialize with empty markers by default
-        ctx["markers"] = json.loads(serialize("geojson", Business.objects.none()))
-        
-        # Get search results from session if they exist
-        search_results = self.request.session.pop('search_results', None)
-        
-        if search_results and search_results.get('businesses'):
-            # If we have search results, use those businesses
-            business_ids = search_results['businesses']
-            businesses = Business.objects.filter(id__in=business_ids)
-            
-            # Update context with search results
-            ctx.update({
-                'markers': json.loads(serialize('geojson', businesses)),
-                'search_center': search_results.get('center'),
-                'search_radius_km': search_results.get('radius_km')
-            })
-            
-        return ctx
-
 class QueryView(APIView):
     """
     API endpoint that allows searching for businesses.
@@ -101,21 +71,18 @@ class QueryView(APIView):
             # Find businesses by lat, lon and the supplied search radius or default to 1km
             radius_km, businesses_lat_lon = find_businesses_incrementally(lat, lon, radius_km)
             all_businesses = set(businesses_city_state + businesses_lat_lon)
-
-            # Store results in session for the map view
-            request.session['search_results'] = {
-                'businesses': [b.id for b in all_businesses],
-                'center': {'lat': lat, 'lng': lon},
-                'radius_km': radius_km
-            }
             
             # Return the search results
             serializer = self.serializer_class(all_businesses, many=True)
-            # return redirect('query:results')
+            # Build a queryset for GeoJSON serialization
+            business_ids = [b.id for b in all_businesses]
+            queryset = Business.objects.filter(id__in=business_ids)
+            geojson = json.loads(serialize('geojson', queryset))
             return Response({
                 'results': serializer.data,
                 'search_center': {'lat': lat, 'lng': lon},
-                'radius_km': radius_km
+                'radius_km': radius_km,
+                'geoJSON': geojson,
             }, status=status.HTTP_200_OK)
             
         except ValueError:

@@ -15,25 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Submit the form via fetch
-            fetch(`/query/?${params.toString()}`)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.error || 'Search failed');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // On success, redirect to results page
-                    window.location.href = '/results/';
-                })
-                .catch(error => {
-                    // Show error message to user
-                    alert(error.message || 'An error occurred during search');
-                    console.error('Search error:', error);
-                });
+            // Redirect to results page with params (no fetch here)
+            window.location.href = `/results/?${params.toString()}`;
         });
     }
 });
